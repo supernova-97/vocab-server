@@ -42,4 +42,17 @@ app.post("/lists", async (req, res) => {
   }
 });
 
+// DELETE: Liste löschen
+app.delete("/lists/:id", async (req, res) => {
+  try {
+    const deletedList = await List.findByIdAndDelete(req.params.id);
+    if (!deletedList) {
+      return res.status(404).json({ error: "List not found" });
+    }
+    res.json({ message: "List deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(5000, () => console.log("Server running on port 5000"));
