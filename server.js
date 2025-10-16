@@ -1,9 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const uri =
   "mongodb+srv://felixbuyni_db_user:sNYZ2FhtUgb4njzT@vocabulary-app-clstr.38ati6w.mongodb.net/vocabularyDB?retryWrites=true&w=majority&appName=vocabulary-app-clstr";
@@ -13,13 +16,27 @@ mongoose
   .then(() => console.log("Connected to Atlas!"))
   .catch((err) => console.error("Connection error:", err));
 
-const sampleSchema = new mongoose.Schema({}, { strict: false });
-const Sample = mongoose.model("Sample", sampleSchema, "lists");
+const listSchema = new mongoose.Schema({
+  name: String,
+});
+const List = mongoose.model("List", listSchema, "lists");
 
+// GET: Alle Listen abrufen
 app.get("/lists", async (req, res) => {
   try {
-    const docs = await Sample.find({}).limit(10);
-    res.json(docs);
+    const lists = await List.find();
+    res.json(lists);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST: Neue Liste speichern
+app.post("/lists", async (req, res) => {
+  try {
+    const newList = new List(req.body);
+    await newList.save();
+    res.status(201).json(newList);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
