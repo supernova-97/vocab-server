@@ -55,4 +55,14 @@ app.delete("/lists/:id", async (req, res) => {
   }
 });
 
+app.get("/lists/:id", async (req, res) => {
+  try {
+    const list = await List.findById(req.params.id);
+    if (!list) return res.status(404).json({ error: "List not found" });
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(5000, () => console.log("Server running on port 5000"));
