@@ -2,67 +2,20 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import listRoutes from "./routes/listRoutes.js";
 
-dotenv.config();
 const app = express();
+dotenv.config();
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "mongodb+srv://felixbuyni_db_user:sNYZ2FhtUgb4njzT@vocabulary-app-clstr.38ati6w.mongodb.net/vocabularyDB?retryWrites=true&w=majority&appName=vocabulary-app-clstr";
-
+// DB-Verbindung
 mongoose
-  .connect(uri)
-  .then(() => console.log("Connected to Atlas!"))
-  .catch((err) => console.error("Connection error:", err));
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB Atlas"))
+  .catch((err) => console.error("❌ DB Connection Error:", err));
 
-const listSchema = new mongoose.Schema({
-  name: String,
-});
-const List = mongoose.model("List", listSchema, "lists");
+// Routes
+app.use("/lists", listRoutes);
 
-// GET: Alle Listen abrufen
-app.get("/lists", async (req, res) => {
-  try {
-    const lists = await List.find();
-    res.json(lists);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST: Neue Liste speichern
-app.post("/lists", async (req, res) => {
-  try {
-    const newList = new List(req.body);
-    await newList.save();
-    res.status(201).json(newList);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE: Liste löschen
-app.delete("/lists/:id", async (req, res) => {
-  try {
-    const deletedList = await List.findByIdAndDelete(req.params.id);
-    if (!deletedList) {
-      return res.status(404).json({ error: "List not found" });
-    }
-    res.json({ message: "List deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get("/lists/:id", async (req, res) => {
-  try {
-    const list = await List.findById(req.params.id);
-    if (!list) return res.status(404).json({ error: "List not found" });
-    res.json(list);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(5000, () => console.log("🚀 Server running on port 5000"));
